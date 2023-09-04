@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>To Do List</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-4bw+/aepP/YC94hEpVNVgiZdgIC5+VKNBQNGCHeKRQN+PtmoHDEXuppvnDJzQIu9" crossorigin="anonymous">
+    <link rel="stylesheet" href="css/all.min.css">
+
+</head>
+
+<body class="d-flex flex-column min-vh-100">
+    <!-- nav-bar section -->
+    <nav class="navbar navbar-info bg-info mb-4">
+        <div class="container" style="max-width: 600px;">
+            <a href="#" class="navbar-brand"><i class="fa-solid fa-list-check me-3"></i>To-Do List
+                <span class="badge bg-danger ms-2">0</span>
+            </a>
+
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a href="#" class="nav-link" id="clear">Clear</a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+    <!-- nav-bar section -->
+    <div class="container" style="max-width: 600px;">
+        <div class="input-group mb-4">
+            <input type="text" class="form-control">
+            <button class="btn btn-dark">Add</button>
+        </div>
+        <ul id="todo" class="list-group mb-4"></ul>
+        <ul id="done" class="list-group" style="opacity: 0,5"></ul>
+    </div>
+    <!-- footer section -->
+    <footer class="container-fluid text-center bg-black mt-auto">
+        <p class="text-muted my-5">&copy; Copyright 2023 by Htet Myat Aung</p>
+    </footer>
+    <!-- footer section -->
+    <script>
+        let data = getData();
+        data.map(item => createItem(item.text, item.done));
+
+        function getData() {
+            return JSON.parse(localStorage.getItem("data")) || [];
+        }
+
+        function saveData(text) {
+            let data = getData();
+            data.push({ text, done: false });
+            localStorage.setItem("data", JSON.stringify(data));
+        }
+
+        function removeData(text) {
+            let data = getData();
+            let result = data.filter(item => item.text != text);
+            localStorage.setItem("data", JSON.stringify(result));
+        }
+
+        function checkData(text) {
+            let data = getData();
+            let result = data.map(item => {
+                if (item.text == text) item.done = true;
+                return item;
+            });
+            localStorage.setItem("data", JSON.stringify(result));
+        };
+
+        function clearData() {
+            let data = getData();
+            let result = data.filter(item => !item.done);
+            localStorage.setItem("data", JSON.stringify(result));
+        }
+
+        function updateCount() {
+            document.querySelector(".badge").textContent =
+                document.querySelectorAll("#todo li").length;
+        }
+
+        document.querySelector("#clear").onclick = function () {
+            clearData();
+            document.querySelector("#done").textContent = "";
+        }
+
+        document.querySelector("button").onclick = function () {
+            let text = document.querySelector("input").value;
+            if (text == "") return false;
+
+
+            createItem(text);
+            saveData(text);
+            updateCount();
+
+            document.querySelector("input").value = "";
+            document.querySelector("input").focus();
+
+        }
+
+        document.querySelector("input").onkeydown = function (e) {
+            if (e.key == "Enter") {
+                document.querySelector("button").onclick();
+            }
+        }
+        function createItem(text, done) {
+            let li = document.createElement("li");
+            li.classList.add("list-group-item");
+            li.textContent = text;
+
+            let del = document.createElement("a");
+            del.setAttribute("href", "#");
+            del.classList.add("fa-solid", "fa-trash", "text-danger", "float-end")
+            del.onclick = function () {
+                li.remove();
+                updateCount();
+                removeData(text);
+            }
+            li.appendChild(del);
+
+            let check = document.createElement("a");
+            check.setAttribute("href", "#");
+            check.classList.add("fa-solid", "fa-check", "float-start", "mb-3", "me-2");
+            check.onclick = function () {
+                checkData(text);
+                document.querySelector("#done").appendChild(li);
+                check.remove();
+                updateCount();
+            }
+            if (!done) li.appendChild(check);
+
+            if (done) {
+                document.querySelector("#done").appendChild(li);
+            } else {
+                document.querySelector("#todo").appendChild(li);
+            }
+        }
+
+    </script>
+
+</body>
+
+</html>
